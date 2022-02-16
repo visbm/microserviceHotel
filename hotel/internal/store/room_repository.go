@@ -3,6 +3,7 @@ package store
 import (
 	"errors"
 	"hotel/domain/model"
+	"hotel/pkg/pagination"
 	"log"
 )
 
@@ -23,20 +24,20 @@ func (r *RoomRepository) Create(rm *model.Room) (*model.Room, error) {
 }
 
 // GetAll returns all rooms
-func (r *RoomRepository) GetAll() (*[]model.Room, error) {
+func (r *RoomRepository) GetAll() (*[]model.RoomDTO, error) {
 	rows, err := r.Store.Db.Query("SELECT * FROM room")
 	if err != nil {
 		log.Print(err)
 	}
-	rooms := []model.Room{}
+	rooms := []model.RoomDTO{}
 
 	for rows.Next() {
-		room := model.Room{}
+		room := model.RoomDTO{}
 		err := rows.Scan(
 			&room.RoomID,
 			&room.RoomNumber,
 			&room.PetType,
-			&room.Hotel.HotelID,
+			&room.HotelID,
 		)
 		if err != nil {
 			log.Print(err)
@@ -48,16 +49,15 @@ func (r *RoomRepository) GetAll() (*[]model.Room, error) {
 }
 
 //FindByID searchs and returns room by ID
-func (r *RoomRepository) FindByID(id int) (*model.Room, error) {
-	room := &model.Room{}
+func (r *RoomRepository) FindByID(id int) (*model.RoomDTO, error) {
+	room := &model.RoomDTO{}
 	if err := r.Store.Db.QueryRow("SELECT * FROM room WHERE id = $1",
 		id).Scan(
 		&room.RoomID,
 		&room.RoomNumber,
 		&room.PetType,
-		&room.Hotel.HotelID,
+		&room.HotelID,
 	); err != nil {
-		log.Printf(err.Error())
 		return nil, err
 	}
 	return room, nil
@@ -98,4 +98,60 @@ func (r *RoomRepository) Update(rm *model.Room) error {
 	}
 	log.Printf("Room updated, rows affectet: %d", result)
 	return nil
+}
+
+// GetAllPagination returns all rooms with limit and offset (limit - max cout off rows on the page)
+//offset means which row are first
+func (r *RoomRepository) GetAllPagination(p *pagination.Page) (*[]model.RoomDTO, error) {
+	p.CalculateOffset()
+	rows, err := r.Store.Db.Query("SELECT * FROM ROOM OFFSET $1 LiMIT $2", p.Offset, p.PageSize)
+	if err != nil {
+		log.Print(err)
+		return nil, err
+	}
+	rooms := []model.RoomDTO{}
+
+	for rows.Next() {
+		room := model.RoomDTO{}
+		err := rows.Scan(
+			&room.RoomID,
+			&room.RoomNumber,
+			&room.PetType,
+			&room.HotelID,
+		)
+		if err != nil {
+			log.Print(err)
+			continue
+		}
+		rooms = append(rooms, room)
+	}
+
+	return &rooms, nil
+}
+
+// RoomFromDTO ...
+func (r *RoomRepository) RoomFromDTO(dto *model.RoomDTO) (*model.Room, error) {
+	hotel, err := r.Store.HotelRepository.FindByID(dto.HotelID)
+	if err != nil {
+		return nil, err
+	}
+	return &model.Room{
+		RoomID:       dto.RoomID,
+		RoomNumber:   dto.RoomNumber,
+		PetType:      dto.PetType,
+		Hotel:        *hotel,
+		RoomPhotoURL: dto.RoomPhotoURL,
+	}, nil
+
+}
+
+func (r *RoomRepository) GetTotalRows() (int, error) {
+	var c int
+	err := r.Store.Db.QueryRow("SELECT COUNT(*) FROM ROOM").Scan(&c)
+	if err != nil {
+		log.Print(err.Error())
+		return 0, err
+	}
+
+	return c, nil
 }
