@@ -11,7 +11,6 @@ import (
 var (
 	latin    = regexp.MustCompile(`\p{Latin}`)
 	cyrillic = regexp.MustCompile(`[\p{Cyrillic}]`)
-	phone    = regexp.MustCompile(`^(?:(?:\(?(?:00|\+)([1-4]\d\d|[1-9]\d?)\)?)?[\-\.\ \\\/]?)?((?:\(?\d{1,}\)?[\-\.\ \\\/]?){0,})(?:[\-\.\ \\\/]?(?:#|ext\.?|extension|x)[\-\.\ \\\/]?(\d+))?$`)
 )
 
 // WithoutSpaces ...
@@ -41,16 +40,6 @@ func IsLetterHyphenSpaces(value interface{}) error {
 		return nil
 	}
 	return errors.New("only latin or cyrillic symblos, space and '-' symbol allowed")
-}
-
-// IsPhone ...
-func IsPhone(value interface{}) error {
-	s := value.(string)
-
-	if phone.MatchString(s) {
-		return nil
-	}
-	return errors.New("invalid phone number format")
 }
 
 // IsPetType checks if string matchs to a Pet types of Pets

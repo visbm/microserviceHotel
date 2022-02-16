@@ -13,6 +13,14 @@ type Room struct {
 	RoomPhotoURL string `json:"roomPhotoUrl"`
 }
 
+type RoomDTO struct {
+	RoomID       int     `json:"roomId"`
+	RoomNumber   int     `json:"roomNum"`
+	PetType      PetType `json:"petType"`
+	HotelID      int     `json:"hotelID"`
+	RoomPhotoURL string  `json:"roomPhotoUrl"`
+}
+
 // PetType ...
 type PetType string
 
