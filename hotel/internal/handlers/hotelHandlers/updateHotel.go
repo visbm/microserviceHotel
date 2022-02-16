@@ -1,4 +1,4 @@
-package seathandlers
+package hotelhandlers
 
 import (
 	"encoding/json"
@@ -11,11 +11,11 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-func NewSeat(s *store.Store) httprouter.Handle {
+//UpdateHotel
+func UpdateHotel(s *store.Store) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-		w.Header().Set("Content-Type", "application/json")
 
-		req := &model.SeatDTO{}
+		req := &model.Hotel{}
 		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			s.Logger.Errorf("Eror during JSON request decoding. Request body: %v, Err msg: %w", r.Body, err)
@@ -29,45 +29,38 @@ func NewSeat(s *store.Store) httprouter.Handle {
 			s.Logger.Errorf("Can't open DB. Err msg:%v.", err)
 		}
 
-		roomDTO, err := s.Room().FindByID(req.RoomID)
+		h, err := s.Hotel().FindByID(req.HotelID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
-			s.Logger.Errorf("Cant find room. Err msg:%v.", err)
+			s.Logger.Errorf("Cant find hotel. Err msg:%v.", err)
 			return
 		}
 
-		room , err := s.Room().RoomFromDTO(roomDTO)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			s.Logger.Errorf("Cant find room. Err msg:%v.", err)
-			return
+		if req.Name != "" {
+			h.Name = req.Name
 		}
 
-
-		seat := model.Seat{
-			SeatID:      0,
-			Room:        *room,
-			Description: req.Description,
-			RentFrom:    req.RentFrom,
-			RentTo:      req.RentTo,
+		if req.Address != "" {
+			h.Address = req.Address
 		}
 
-		err = seat.Validate()
+		err = h.Validate()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			s.Logger.Errorf("Data is not valid. Err msg:%v.", err)
 			return
 		}
 
-		_, err = s.Seat().Create(&seat)
+		err = s.Hotel().Update(h)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
-			s.Logger.Errorf("Can't create Seat. Err msg:%v.", err)
+			s.Logger.Errorf("Can't update hotel. Err msg:%v.", err)
 			return
 		}
 
-		s.Logger.Info("Creat Seat with id = %d", seat.SeatID)
+		s.Logger.Info("Update Hotel with id = %d", h.HotelID)
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(response.Info{Messsage: fmt.Sprintf("Creat Seat with id = %d", seat.SeatID)})
+		json.NewEncoder(w).Encode(response.Info{Messsage: fmt.Sprintf("Update hotel with id = %d", h.HotelID)})
+
 	}
 }
