@@ -2,7 +2,7 @@ package seathandlers
 
 import (
 	"encoding/json"
-	"hotel/hotel/internal/store"
+	"hotel/internal/store"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"

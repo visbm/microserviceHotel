@@ -3,8 +3,8 @@ package store
 import (
 	"database/sql"
 	"fmt"
-	"hotel/hotel/internal/config"
-	"hotel/hotel/pkg/logging"
+	"hotel/internal/config"
+	"hotel/pkg/logging"
 
 	_ "github.com/lib/pq" // ...
 )

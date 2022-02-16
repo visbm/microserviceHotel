@@ -3,7 +3,7 @@ package jwt
 import (
 	"errors"
 	"fmt"
-	"hotel/hotel/pkg/logging"
+	"hotel/pkg/logging"
 	"log"
 	"net/http"
 	"os"

@@ -1,0 +1,132 @@
+version: '3.9'
+
+services:
+    hoteldb:
+        container_name: hoteldb
+        image: postgres:latest
+        env_file:
+            - .env
+        environment:
+            - POSTGRES_USER=${HOTEL_POSTGRES_USER}
+            - POSTGRES_PASSWORD=${HOTEL_POSTGRES_PASSWORD}
+            - POSTGRES_DB=${HOTEL_POSTGRES_DB}
+            - POSTGRES_HOST=${HOTEL_POSTGRES_HOST}
+            - POSTGRES_SSLMODE=${HOTEL_POSTGRES_SSLMODE}
+        ports:
+            - "8081:5432"
+        restart: always
+        volumes:
+            - database-data:/var/lib/postgresql/user/data/
+        networks:
+            new:
+                aliases:
+                    - database
+    hoteldbtest:
+        container_name: hoteldbtest
+        image: postgres:latest
+        env_file:
+            - .env
+        environment:
+            - TEST_POSTGRES_USER=${TEST_HOTEL_POSTGRES_USER}
+            - TEST_POSTGRES_PASSWORD=${TEST_HOTEL_POSTGRES_PASSWORD}
+            - TEST_POSTGRES_DB=${TEST_HOTEL_POSTGRES_DB}
+            - TEST_POSTGRES_HOST=${TEST_HOTEL_POSTGRES_HOST}
+            - TEST_POSTGRES_SSLMODE=${TEST_HOTEL_POSTGRES_SSLMODE}
+        ports:
+            - "3232:5432"
+        restart: unless-stopped
+        volumes:
+            - database-test:/var/lib/test-date/user/data/
+        networks:
+            new:
+                aliases:
+                    - database
+
+    pgadmin:
+        container_name: pgadmin
+        image: dpage/pgadmin4
+        env_file:
+            - .env
+        environment:
+            - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
+            - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+        ports:
+            - "5050:80"
+        restart: unless-stopped
+        volumes:
+            - pgadmin:/root/.pgadmin
+        networks:
+            - new
+
+    hotel_migrate:
+        container_name: hotel_migrate
+        image: migrate/migrate
+        restart: on-failure
+        networks:
+            - new
+        volumes:
+            - ./user/migrations:/user/migrations
+        command:
+            [
+                "-path",
+                "user/migrations",
+                "-database",
+                "postgres://user:userpass@hoteldb:5432/hoteldb?sslmode=disable",
+                "up"
+            ]
+        links:
+            - hoteldb
+        depends_on:
+            - hoteldb
+
+    test_migrate:
+        container_name: test_migrate
+        image: migrate/migrate
+        restart: on-failure
+        networks:
+            - new
+        volumes:
+            - ./user/migrations:/user/migrations
+        command:
+            [
+                "-path",
+                "user/migrations",
+                "-database",
+                "postgres://user:userpass@hoteldbtest:5432/testuserdatabase?sslmode=disable",
+                "up"
+            ]
+        links:
+            - hoteldbtest
+        depends_on:
+            - hoteldbtest
+
+    hotel_service:
+        container_name: hotel_service
+        build:
+            dockerfile: dockerfile
+            context: ./user
+        ports:
+            - "5555:5555"
+        env_file:
+            - .env
+        environment:
+            - SERVER_HOST=0.0.0.0
+            - ENV=prod
+        tty: true
+        restart: on-failure
+        volumes:
+            - api:/user/
+        networks:
+            - new
+        depends_on:
+            - hoteldb
+
+networks:
+    new:
+        driver: bridge
+
+volumes:
+    api: null
+    database-data: null
+    database-test: null
+    pgadmin: null

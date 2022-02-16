@@ -3,7 +3,7 @@ package rest
 import (
 	"errors"
 	"fmt"
-	"hotel/hotel/pkg/logging"
+	"hotel/pkg/logging"
 	"net/http"
 	"net/url"
 	"path"

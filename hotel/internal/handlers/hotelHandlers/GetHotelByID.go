@@ -2,7 +2,7 @@ package hotelhandlers
 
 import (
 	"encoding/json"
-	"hotel/hotel/internal/store"
+	"hotel/internal/store"
 	"net/http"
 	"strconv"
 

@@ -1,7 +1,7 @@
 package store
 
 import (
-	"hotel/hotel/domain/model"
+	"hotel/domain/model"
 	"log"
 )
 
