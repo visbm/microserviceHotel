@@ -1,7 +1,7 @@
 package store
 
 import (
-	"hotel/hotel/internal/config"
+	"hotel/internal/config"
 	"testing"
 )
 

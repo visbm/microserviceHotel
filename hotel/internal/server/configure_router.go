@@ -1,10 +1,10 @@
 package server
 
 import (
-	hotelhandlers "hotel/hotel/internal/handlers/hotelHandlers"
-	roomhandlers "hotel/hotel/internal/handlers/roomHandlers"
-	seathandlers "hotel/hotel/internal/handlers/seatHandlers"
-	"hotel/hotel/internal/store"
+	hotelhandlers "hotel/internal/handlers/hotelHandlers"
+	roomhandlers "hotel/internal/handlers/roomHandlers"
+	seathandlers "hotel/internal/handlers/seatHandlers"
+	"hotel/internal/store"
 )
 
 // ConfigureRouter ...

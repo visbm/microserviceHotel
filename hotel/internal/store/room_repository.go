@@ -2,7 +2,7 @@ package store
 
 import (
 	"errors"
-	"hotel/hotel/domain/model"
+	"hotel/domain/model"
 	"log"
 )
 

@@ -1,8 +1,8 @@
 package main
 
 import (
-	"hotel/hotel/internal/config"
-	"hotel/hotel/internal/server"
+	"hotel/internal/config"
+	"hotel/internal/server"
 )
 
 func main() {

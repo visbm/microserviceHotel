@@ -1,9 +1,9 @@
 package server
 
 import (
-	"hotel/hotel/internal/config"
-	"hotel/hotel/internal/store"
-	"hotel/hotel/pkg/logging"
+	"hotel/internal/config"
+	"hotel/internal/store"
+	"hotel/pkg/logging"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
