@@ -28,8 +28,9 @@ func (s *Seat) Validate() error {
 
 	return validation.ValidateStruct(
 		s,
-		validation.Field(s.Description, validation.Required, validation.Min(1), validation.Max(999999999999)),
-		//validation.Field(s.IsFree, validation.Required),
-		validation.Field(s.Room, validation.Required),
-	)
+		validation.Field(&s.Description, validation.Required, validation.Min(1), validation.Max(999999999999)),
+		validation.Field(&s.RentFrom, validation.Required),
+		validation.Field(&s.RentTo, validation.Required ),
+		validation.Field(&s.Room, validation.Required),
+		)
 }
