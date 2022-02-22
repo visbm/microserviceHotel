@@ -88,7 +88,7 @@ func UpdateSeat(s *store.Store) httprouter.Handle {
 		err = s.Seat().Update(seat)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
-			json.NewEncoder(w).Encode(apperror.NewAppError("Can't update room.", fmt.Sprintf("%d", http.StatusBadRequest), fmt.Sprintf("Can't update room. Err msg:%v.", err)))
+			json.NewEncoder(w).Encode(apperror.NewAppError("Can't update seat.", fmt.Sprintf("%d", http.StatusBadRequest), fmt.Sprintf("Can't update seat. Err msg:%v.", err)))
 			return
 		}
 
