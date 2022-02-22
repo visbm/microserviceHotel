@@ -34,7 +34,6 @@ func NewHotel(s *store.Store) httprouter.Handle {
 		hotel, err := s.Hotel().FindByID(req.HotelID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
-			s.Logger.Errorf("Cant find hotel. Err msg:%v.", err)
 			json.NewEncoder(w).Encode(apperror.NewAppError("Cant find hotel.", fmt.Sprintf("%d", http.StatusBadRequest), fmt.Sprintf("Cant find hotel. Err msg:%v.", err)))
 			return
 		}
@@ -57,12 +56,10 @@ func NewHotel(s *store.Store) httprouter.Handle {
 		_, err = s.Employee().Create(&e)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
-			s.Logger.Errorf("Can't create employee. Err msg:%v.", err)
-			json.NewEncoder(w).Encode(apperror.NewAppError("Can't create employee.", fmt.Sprintf("%d", http.StatusBadRequest), fmt.Sprintf("Can't create room. Err msg:%v.", err)))
+			json.NewEncoder(w).Encode(apperror.NewAppError("Can't create employee.", fmt.Sprintf("%d", http.StatusBadRequest), fmt.Sprintf("Can't create employee. Err msg:%v.", err)))
 			return
 		}
 
-		s.Logger.Info("Creat employee with id = %d", e.EmployeeID)
 		w.WriteHeader(http.StatusCreated)
 		json.NewEncoder(w).Encode(response.Info{Messsage: fmt.Sprintf("Creat employee with id = %d", e.EmployeeID)})
 	}

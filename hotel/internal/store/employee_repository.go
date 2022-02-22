@@ -18,9 +18,10 @@ func (r *EmployeeRepository) Create(e *model.Employee) (*model.Employee, error) 
 		e.Hotel.HotelID,
 		e.Position,
 	).Scan(&e.EmployeeID); err != nil {
-		log.Print(err)
+		r.Store.Logger.Errorf("Can't create employee. Err msg:%v.", err)
 		return nil, err
 	}
+	r.Store.Logger.Info("Creat employee with id = %d", e.EmployeeID)
 	return e, nil
 }
 
@@ -28,7 +29,7 @@ func (r *EmployeeRepository) Create(e *model.Employee) (*model.Employee, error) 
 func (r *EmployeeRepository) GetAll() (*[]model.EmployeeDTO, error) {
 	rows, err := r.Store.Db.Query("SELECT * FROM employee")
 	if err != nil {
-		log.Print(err)
+		r.Store.Logger.Errorf("Can't find employees. Err msg: %v", err)
 	}
 	employees := []model.EmployeeDTO{}
 
@@ -41,7 +42,7 @@ func (r *EmployeeRepository) GetAll() (*[]model.EmployeeDTO, error) {
 			&employee.Position,
 		)
 		if err != nil {
-			log.Printf(err.Error())
+			r.Store.Logger.Errorf("Can't find employees. Err msg: %v", err)
 			continue
 		}
 		employees = append(employees, employee)
@@ -58,7 +59,7 @@ func (r *EmployeeRepository) FindByID(id int) (*model.EmployeeDTO, error) {
 		&employee.HotelID,
 		&employee.Position,
 	); err != nil {
-		log.Printf(err.Error())
+		r.Store.Logger.Errorf("Cant find employee. Err msg:%v.", err)
 		return nil, err
 	}
 	return employee, nil
@@ -68,16 +69,20 @@ func (r *EmployeeRepository) FindByID(id int) (*model.EmployeeDTO, error) {
 func (r *EmployeeRepository) Delete(id int) error {
 	result, err := r.Store.Db.Exec("DELETE FROM employee WHERE id = $1", id)
 	if err != nil {
-		log.Printf(err.Error())
+		r.Store.Logger.Errorf("Can't delete employee. Err msg:%v.", err)
 		return err
 	}
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
+		r.Store.Logger.Errorf("Can't delete employee. Err msg:%v.", err)
+
 		return err
 	}
 
 	if rowsAffected < 1 {
-		return errors.New("No rows affected")
+		err := errors.New("no rows affected")
+		r.Store.Logger.Errorf("Can't delete employee. Err msg:%v.", err)
+		return err
 	}
 
 	log.Printf("Employee deleted, rows affectet: %d", result)
@@ -97,10 +102,10 @@ func (r *EmployeeRepository) Update(e *model.Employee) error {
 		e.EmployeeID,
 	)
 	if err != nil {
-		log.Printf(err.Error())
+		r.Store.Logger.Errorf("Can't update employee. Err msg:%v.", err)
 		return err
 	}
-	log.Printf("Employee updated, rows affectet: %d", result)
+	r.Store.Logger.Info("Update employee with id = %d,rows affectet: %d ", e.EmployeeID, result)
 	return nil
 }
 
@@ -121,9 +126,10 @@ func (r *EmployeeRepository) FindByUserID(iserId int) (*model.EmployeeDTO, error
 }
 
 // EmployeeFromDTO ...
-func (r *RoomRepository) EmployeeFromDTO(dto *model.EmployeeDTO) (*model.Employee, error) {
+func (r *EmployeeRepository) EmployeeFromDTO(dto *model.EmployeeDTO) (*model.Employee, error) {
 	hotel, err := r.Store.HotelRepository.FindByID(dto.HotelID)
 	if err != nil {
+		r.Store.Logger.Errorf("Can't convert employeeDTO. Err msg: %v", err)
 		return nil, err
 	}
 	return &model.Employee{

@@ -31,12 +31,10 @@ func DeleteEmployee(s *store.Store) httprouter.Handle {
 		}
 		err = s.Employee().Delete(id)
 		if err != nil {
-			s.Logger.Errorf("Can't delete employee. Err msg:%v.", err)
 			json.NewEncoder(w).Encode(apperror.NewAppError("Can't delete employee.", fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Can't delete employee. Err msg:%v.", err)))
 			return
 		}
 
-		s.Logger.Info("Delete employee with id = %d", id)
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(response.Info{Messsage: fmt.Sprintf("Delete employee with id = %d", id)})
 
