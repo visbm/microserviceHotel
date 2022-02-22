@@ -3,9 +3,9 @@ package seathandlers
 import (
 	"encoding/json"
 	"fmt"
+	"hotel/internal/apperror"
 	"hotel/internal/store"
 	"hotel/pkg/response"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -19,19 +19,21 @@ func DeleteSeats(s *store.Store) httprouter.Handle {
 		id, err := strconv.Atoi(ps.ByName("id"))
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			s.Logger.Errorf("Bad request. Err msg:%v. Requests body: %v", err, r.FormValue("id"))
+			s.Logger.Errorf("Bad request. Err msg:%v. Requests body: %v", err, ps.ByName("id"))
+			json.NewEncoder(w).Encode(apperror.NewAppError(fmt.Sprintf("Bad request. Err msg:%v. Requests body: %v", err, ps.ByName("id")), fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Bad request. Err msg:%v. Requests body: %v", err, ps.ByName("id"))))
+
 			return
 		}
 		err = s.Open()
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			s.Logger.Errorf("Can't open DB. Err msg:%v.", err)
+			json.NewEncoder(w).Encode(apperror.NewAppError("Can't open DB", fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Can't open DB. Err msg:%v.", err)))
 			return
 		}
 		err = s.Seat().Delete(id)
 		if err != nil {
-			log.Print(err)
 			s.Logger.Errorf("Can't delete seat. Err msg:%v.", err)
+			json.NewEncoder(w).Encode(apperror.NewAppError("Can't delete seat.", fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Can't delete seat. Err msg:%v.", err)))
 			return
 		}
 		s.Logger.Info("Delete seat with id = %d", id)

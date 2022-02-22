@@ -2,6 +2,8 @@ package roomhandlers
 
 import (
 	"encoding/json"
+	"fmt"
+	"hotel/internal/apperror"
 	"hotel/internal/store"
 	"net/http"
 	"strconv"
@@ -17,21 +19,22 @@ func GetRoomByID(s *store.Store) httprouter.Handle {
 		id, err := strconv.Atoi(ps.ByName("id"))
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			s.Logger.Errorf("Bad request. Err msg:%v. Requests body: %v", err, r.FormValue("id"))
+			s.Logger.Errorf("Bad request. Err msg:%v. Requests body: %v", err, ps.ByName("id"))
+			json.NewEncoder(w).Encode(apperror.NewAppError(fmt.Sprintf("Bad request. Err msg:%v. Requests body: %v", err, ps.ByName("id")), fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Bad request. Err msg:%v. Requests body: %v", err, ps.ByName("id"))))
 			return
 		}
 
 		err = s.Open()
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			s.Logger.Errorf("Can't open DB. Err msg:%v.", err)
+			json.NewEncoder(w).Encode(apperror.NewAppError("Can't open DB", fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Can't open DB. Err msg:%v.", err)))
 			return
 		}
 
 		room, err := s.Room().FindByID(id)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
-			s.Logger.Errorf("Cant find room. Err msg:%v.", err)
+			json.NewEncoder(w).Encode(apperror.NewAppError("Can't find room.", fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Can't find room. Err msg:%v.", err)))
 			return
 		}
 

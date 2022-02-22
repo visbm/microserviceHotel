@@ -1,4 +1,4 @@
-package seathandlers
+package employeehandlers
 
 import (
 	"encoding/json"
@@ -10,8 +10,8 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-// AllSeatsHandler ...
-func AllSeatsHandler(s *store.Store) httprouter.Handle {
+// AllEmployeeHandler ...
+func AllEmployeeHandler(s *store.Store) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		w.Header().Set("Content-Type", "application/json")
 
@@ -21,16 +21,17 @@ func AllSeatsHandler(s *store.Store) httprouter.Handle {
 			json.NewEncoder(w).Encode(apperror.NewAppError("Can't open DB", fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Can't open DB. Err msg:%v.", err)))
 			return
 		}
-		seats, err := s.Seat().GetAll()
+
+		employees, err := s.Employee().GetAll()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
-			s.Logger.Errorf("Can't find seats . Err msg: %v", err)
-			json.NewEncoder(w).Encode(apperror.NewAppError("Can't find seats", fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Can't find seats. Err msg: %v", err)))
+			s.Logger.Errorf("Can't find employees. Err msg: %v", err)
+			json.NewEncoder(w).Encode(apperror.NewAppError("Can't find employees", fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Can't find employees. Err msg: %v", err)))
 			return
 		}
 
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(seats)
+		json.NewEncoder(w).Encode(employees)
 
 	}
 }

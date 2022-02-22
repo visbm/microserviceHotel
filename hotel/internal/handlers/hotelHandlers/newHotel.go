@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"hotel/domain/model"
+	"hotel/internal/apperror"
 	"hotel/internal/store"
 	"hotel/pkg/response"
 	"net/http"
@@ -27,7 +28,8 @@ func NewHotel(s *store.Store) httprouter.Handle {
 		err := s.Open()
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			s.Logger.Errorf("Can't open DB. Err msg:%v.", err)
+			json.NewEncoder(w).Encode(apperror.NewAppError("Can't open DB", fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Can't open DB. Err msg:%v.", err)))
+			return
 		}
 
 		h := model.Hotel{
@@ -40,13 +42,15 @@ func NewHotel(s *store.Store) httprouter.Handle {
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			s.Logger.Errorf("Data is not valid. Err msg:%v.", err)
+			json.NewEncoder(w).Encode(apperror.NewAppError("Data is not valid.", fmt.Sprintf("%d", http.StatusBadRequest), fmt.Sprintf("Data is not valid. Err msg:%v.", err)))
 			return
 		}
 
 		_, err = s.Hotel().Create(&h)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
-			s.Logger.Errorf("Can't create Hotel. Err msg:%v.", err)
+			s.Logger.Errorf("Can't create hotel. Err msg:%v.", err)
+			json.NewEncoder(w).Encode(apperror.NewAppError("Can't create hotel.", fmt.Sprintf("%d", http.StatusBadRequest), fmt.Sprintf("Can't create Hotel. Err msg:%v.", err)))
 			return
 		}
 

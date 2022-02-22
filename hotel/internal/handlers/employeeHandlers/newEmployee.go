@@ -1,4 +1,4 @@
-package roomhandlers
+package employeehandlers
 
 import (
 	"encoding/json"
@@ -12,11 +12,12 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-func NewRoom(s *store.Store) httprouter.Handle {
+func NewHotel(s *store.Store) httprouter.Handle {
+
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		w.Header().Set("Content-Type", "application/json")
 
-		req := &model.RoomDTO{}
+		req := &model.EmployeeDTO{}
 		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			s.Logger.Errorf("Eror during JSON request decoding. Request body: %v, Err msg: %w", r.Body, err)
@@ -30,7 +31,6 @@ func NewRoom(s *store.Store) httprouter.Handle {
 			json.NewEncoder(w).Encode(apperror.NewAppError("Can't open DB", fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Can't open DB. Err msg:%v.", err)))
 			return
 		}
-
 		hotel, err := s.Hotel().FindByID(req.HotelID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
@@ -39,15 +39,14 @@ func NewRoom(s *store.Store) httprouter.Handle {
 			return
 		}
 
-		room := model.Room{
-			RoomID:       0,
-			RoomNumber:   req.RoomNumber,
-			PetType:      model.PetType(req.PetType),
-			Hotel:        *hotel,
-			RoomPhotoURL: req.RoomPhotoURL,
+		e := model.Employee{
+			EmployeeID: 0,
+			UserID:     req.UserID,
+			Hotel:      *hotel,
+			Position:   model.Position(req.Position),
 		}
 
-		err = room.Validate()
+		err = e.Validate()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			s.Logger.Errorf("Data is not valid. Err msg:%v.", err)
@@ -55,16 +54,16 @@ func NewRoom(s *store.Store) httprouter.Handle {
 			return
 		}
 
-		_, err = s.Room().Create(&room)
+		_, err = s.Employee().Create(&e)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
-			s.Logger.Errorf("Can't create Room. Err msg:%v.", err)
-			json.NewEncoder(w).Encode(apperror.NewAppError("Can't create room.", fmt.Sprintf("%d", http.StatusBadRequest), fmt.Sprintf("Can't create room. Err msg:%v.", err)))
+			s.Logger.Errorf("Can't create employee. Err msg:%v.", err)
+			json.NewEncoder(w).Encode(apperror.NewAppError("Can't create employee.", fmt.Sprintf("%d", http.StatusBadRequest), fmt.Sprintf("Can't create room. Err msg:%v.", err)))
 			return
 		}
 
-		s.Logger.Info("Creat room with id = %d", room.RoomID)
+		s.Logger.Info("Creat employee with id = %d", e.EmployeeID)
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(response.Info{Messsage: fmt.Sprintf("Creat room with id = %d", room.RoomID)})
+		json.NewEncoder(w).Encode(response.Info{Messsage: fmt.Sprintf("Creat employee with id = %d", e.EmployeeID)})
 	}
 }

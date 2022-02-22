@@ -69,3 +69,8 @@ INSERT INTO SEAT (room_id, is_free, description) VALUES
 (1, false, 'VIP seat'),
 (2, true, 'Seat for sick pets'),
 (3, false, 'Regular seat');
+
+INSERT INTO EMPLOYEE (user_id, hotel_id, position ) VALUES 
+(1 , 1, 'manager' ),
+(2 , 2, 'employee' ),
+(3 , 3, 'admin' );

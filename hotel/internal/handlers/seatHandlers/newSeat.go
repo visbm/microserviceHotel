@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"hotel/domain/model"
+	"hotel/internal/apperror"
 	"hotel/internal/store"
 	"hotel/pkg/response"
 	"net/http"
@@ -26,23 +27,24 @@ func NewSeat(s *store.Store) httprouter.Handle {
 		err := s.Open()
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			s.Logger.Errorf("Can't open DB. Err msg:%v.", err)
+			json.NewEncoder(w).Encode(apperror.NewAppError("Can't open DB", fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Can't open DB. Err msg:%v.", err)))
+			return
 		}
 
 		roomDTO, err := s.Room().FindByID(req.RoomID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			s.Logger.Errorf("Cant find room. Err msg:%v.", err)
+			json.NewEncoder(w).Encode(apperror.NewAppError("Cant find room.", fmt.Sprintf("%d", http.StatusBadRequest), fmt.Sprintf("Cant find room. Err msg:%v.", err)))
 			return
 		}
 
-		room , err := s.Room().RoomFromDTO(roomDTO)
+		room, err := s.Room().RoomFromDTO(roomDTO)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
-			s.Logger.Errorf("Cant find room. Err msg:%v.", err)
+			json.NewEncoder(w).Encode(apperror.NewAppError("Can't find room.", fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Can't find room. Err msg:%v.", err)))
 			return
 		}
-
 
 		seat := model.Seat{
 			SeatID:      0,
@@ -56,18 +58,21 @@ func NewSeat(s *store.Store) httprouter.Handle {
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			s.Logger.Errorf("Data is not valid. Err msg:%v.", err)
+			json.NewEncoder(w).Encode(apperror.NewAppError("Data is not valid.", fmt.Sprintf("%d", http.StatusBadRequest), fmt.Sprintf("Data is not valid. Err msg:%v.", err)))
 			return
 		}
 
 		_, err = s.Seat().Create(&seat)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
-			s.Logger.Errorf("Can't create Seat. Err msg:%v.", err)
+			s.Logger.Errorf("Can't create seat. Err msg:%v.", err)
+			json.NewEncoder(w).Encode(apperror.NewAppError("Can't create seat.", fmt.Sprintf("%d", http.StatusBadRequest), fmt.Sprintf("Can't create seat. Err msg:%v.", err)))
+
 			return
 		}
 
-		s.Logger.Info("Creat Seat with id = %d", seat.SeatID)
+		s.Logger.Info("Creat seat with id = %d", seat.SeatID)
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(response.Info{Messsage: fmt.Sprintf("Creat Seat with id = %d", seat.SeatID)})
+		json.NewEncoder(w).Encode(response.Info{Messsage: fmt.Sprintf("Creat seat with id = %d", seat.SeatID)})
 	}
 }

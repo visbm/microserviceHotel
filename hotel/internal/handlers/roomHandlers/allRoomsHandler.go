@@ -2,6 +2,8 @@ package roomhandlers
 
 import (
 	"encoding/json"
+	"fmt"
+	"hotel/internal/apperror"
 	"hotel/internal/store"
 	"net/http"
 
@@ -16,13 +18,14 @@ func AllRoomsHandler(s *store.Store) httprouter.Handle {
 		err := s.Open()
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			s.Logger.Errorf("Can't open DB. Err msg:%v.", err)
+			json.NewEncoder(w).Encode(apperror.NewAppError("Can't open DB", fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Can't open DB. Err msg:%v.", err)))
 			return
+
 		}
 		rooms, err := s.Room().GetAll()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
-			s.Logger.Errorf("Can't find rooms. Err msg: %v", err)
+			json.NewEncoder(w).Encode(apperror.NewAppError("Can't find rooms", fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Can't find rooms. Err msg: %v", err)))
 			return
 		}
 

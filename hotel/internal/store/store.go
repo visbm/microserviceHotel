@@ -11,12 +11,13 @@ import (
 
 // Store ...
 type Store struct {
-	Config          *config.Config
-	Db              *sql.DB
-	Logger          *logging.Logger
-	HotelRepository *HotelRepository
-	RoomRepository  *RoomRepository
-	SeatRepository  *SeatRepository
+	Config             *config.Config
+	Db                 *sql.DB
+	Logger             *logging.Logger
+	HotelRepository    *HotelRepository
+	RoomRepository     *RoomRepository
+	SeatRepository     *SeatRepository
+	EmployeeRepository *EmployeeRepository
 }
 
 // New ...
@@ -41,10 +42,12 @@ func (s *Store) Open() error {
 
 	db, err := sql.Open("postgres", dataSourceName)
 	if err != nil {
+		s.Logger.Errorf("Can't open DB. Err msg:%v.", err)
 		return err
 	}
 
 	if err := db.Ping(); err != nil {
+		s.Logger.Errorf("Can't open DB. Err msg:%v.", err)
 		return err
 	}
 
@@ -89,4 +92,17 @@ func (s *Store) Seat() *SeatRepository {
 		Store: s,
 	}
 	return s.SeatRepository
+}
+
+// Employee ...
+func (s *Store) Employee() *EmployeeRepository {
+	if s.EmployeeRepository != nil {
+		return s.EmployeeRepository
+	}
+
+	s.EmployeeRepository = &EmployeeRepository{
+		Store: s,
+	}
+
+	return s.EmployeeRepository
 }

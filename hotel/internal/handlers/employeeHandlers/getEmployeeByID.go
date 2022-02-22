@@ -1,4 +1,4 @@
-package seathandlers
+package employeehandlers
 
 import (
 	"encoding/json"
@@ -11,8 +11,8 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-// GetSeatByID ...
-func GetSeatByID(s *store.Store) httprouter.Handle {
+// GetEmployeeByID ...
+func GetEmployeeByID(s *store.Store) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		w.Header().Set("Content-Type", "application/json")
 
@@ -31,14 +31,14 @@ func GetSeatByID(s *store.Store) httprouter.Handle {
 			return
 		}
 
-		seat, err := s.Seat().FindByID(id)
+		employee, err := s.Employee().FindByID(id)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
-			json.NewEncoder(w).Encode(apperror.NewAppError("Can't find seat.", fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Can't find seat. Err msg:%v.", err)))
+			json.NewEncoder(w).Encode(apperror.NewAppError("Can't find employee.", fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Can't find employee. Err msg:%v.", err)))
 			return
 		}
 
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(seat)
+		json.NewEncoder(w).Encode(employee)
 	}
 }
