@@ -4,7 +4,6 @@ import (
 	"errors"
 	"hotel/domain/model"
 	"hotel/pkg/pagination"
-	"log"
 )
 
 // RoomRepository ...
@@ -17,9 +16,10 @@ func (r *RoomRepository) Create(rm *model.Room) (*model.Room, error) {
 	if err := r.Store.Db.QueryRow(
 		"INSERT INTO room (pet_type, number, hotel_id) VALUES ($1, $2, $3) RETURNING id",
 		string(rm.PetType), rm.RoomNumber, rm.Hotel.HotelID).Scan(&rm.RoomID); err != nil {
-		log.Print(err)
+		r.Store.Logger.Errorf("Can't create room. Err msg:%v.", err)
 		return nil, err
 	}
+	r.Store.Logger.Info("Creat room with id = %d", rm.RoomID)
 	return rm, nil
 }
 
@@ -27,7 +27,7 @@ func (r *RoomRepository) Create(rm *model.Room) (*model.Room, error) {
 func (r *RoomRepository) GetAll() (*[]model.RoomDTO, error) {
 	rows, err := r.Store.Db.Query("SELECT * FROM room")
 	if err != nil {
-		log.Print(err)
+		r.Store.Logger.Errorf("Can't find rooms. Err msg: %v", err)
 	}
 	rooms := []model.RoomDTO{}
 
@@ -40,7 +40,7 @@ func (r *RoomRepository) GetAll() (*[]model.RoomDTO, error) {
 			&room.HotelID,
 		)
 		if err != nil {
-			log.Print(err)
+			r.Store.Logger.Errorf("Can't find rooms. Err msg: %v", err)
 			continue
 		}
 		rooms = append(rooms, room)
@@ -58,6 +58,7 @@ func (r *RoomRepository) FindByID(id int) (*model.RoomDTO, error) {
 		&room.PetType,
 		&room.HotelID,
 	); err != nil {
+		r.Store.Logger.Errorf("Cant find room. Err msg:%v.", err)
 		return nil, err
 	}
 	return room, nil
@@ -67,18 +68,21 @@ func (r *RoomRepository) FindByID(id int) (*model.RoomDTO, error) {
 func (r *RoomRepository) Delete(id int) error {
 	result, err := r.Store.Db.Exec("DELETE FROM room WHERE id = $1", id)
 	if err != nil {
-		log.Printf(err.Error())
+		r.Store.Logger.Errorf("Can't delete room. Err msg:%v.", err)
 		return err
 	}
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
+		r.Store.Logger.Errorf("Can't delete room. Err msg:%v.", err)
 		return err
 	}
 
 	if rowsAffected < 1 {
-		return errors.New("No rows affected")
+		err := errors.New("no rows affected")
+		r.Store.Logger.Errorf("Can't delete room. Err msg:%v.", err)
+		return err
 	}
-	log.Printf("Room deleted, rows affectet: %d", result)
+	r.Store.Logger.Info("Room deleted, rows affectet: %d", result)
 	return nil
 }
 
@@ -93,10 +97,10 @@ func (r *RoomRepository) Update(rm *model.Room) error {
 		rm.RoomID,
 	)
 	if err != nil {
-		log.Printf(err.Error())
+		r.Store.Logger.Errorf("Can't update room. Err msg:%v.", err)
 		return err
 	}
-	log.Printf("Room updated, rows affectet: %d", result)
+	r.Store.Logger.Info("Update room with id = %d,rows affectet: %d ", rm.RoomID, result)
 	return nil
 }
 
@@ -106,7 +110,7 @@ func (r *RoomRepository) GetAllPagination(p *pagination.Page) (*[]model.RoomDTO,
 	p.CalculateOffset()
 	rows, err := r.Store.Db.Query("SELECT * FROM ROOM OFFSET $1 LiMIT $2", p.Offset, p.PageSize)
 	if err != nil {
-		log.Print(err)
+		r.Store.Logger.Errorf("Can't find rooms. Err msg: %v", err)
 		return nil, err
 	}
 	rooms := []model.RoomDTO{}
@@ -120,7 +124,7 @@ func (r *RoomRepository) GetAllPagination(p *pagination.Page) (*[]model.RoomDTO,
 			&room.HotelID,
 		)
 		if err != nil {
-			log.Print(err)
+			r.Store.Logger.Errorf("Can't find rooms. Err msg: %v", err)
 			continue
 		}
 		rooms = append(rooms, room)
@@ -133,6 +137,7 @@ func (r *RoomRepository) GetAllPagination(p *pagination.Page) (*[]model.RoomDTO,
 func (r *RoomRepository) RoomFromDTO(dto *model.RoomDTO) (*model.Room, error) {
 	hotel, err := r.Store.HotelRepository.FindByID(dto.HotelID)
 	if err != nil {
+		r.Store.Logger.Errorf("Can't convert roomDTO. Err msg: %v", err)
 		return nil, err
 	}
 	return &model.Room{
@@ -149,7 +154,7 @@ func (r *RoomRepository) GetTotalRows() (int, error) {
 	var c int
 	err := r.Store.Db.QueryRow("SELECT COUNT(*) FROM ROOM").Scan(&c)
 	if err != nil {
-		log.Print(err.Error())
+		r.Store.Logger.Errorf("Can't find rooms. Err msg: %v", err)
 		return 0, err
 	}
 

@@ -32,11 +32,9 @@ func DeleteSeats(s *store.Store) httprouter.Handle {
 		}
 		err = s.Seat().Delete(id)
 		if err != nil {
-			s.Logger.Errorf("Can't delete seat. Err msg:%v.", err)
 			json.NewEncoder(w).Encode(apperror.NewAppError("Can't delete seat.", fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Can't delete seat. Err msg:%v.", err)))
 			return
 		}
-		s.Logger.Info("Delete seat with id = %d", id)
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(response.Info{Messsage: fmt.Sprintf("Delete seat with id = %d", id)})
 

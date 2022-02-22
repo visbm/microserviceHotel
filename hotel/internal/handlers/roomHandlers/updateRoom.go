@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"hotel/domain/model"
+	"hotel/internal/apperror"
 	"hotel/internal/store"
 	"hotel/pkg/response"
 	"net/http"
@@ -25,17 +26,28 @@ func UpdateRoom(s *store.Store) httprouter.Handle {
 		err := s.Open()
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			s.Logger.Errorf("Can't open DB. Err msg:%v.", err)
+			json.NewEncoder(w).Encode(apperror.NewAppError("Can't open DB", fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Can't open DB. Err msg:%v.", err)))
+			return
 		}
 
-		hotel, _ := s.Hotel().FindByID(req.HotelID)
+		hotel, err := s.Hotel().FindByID(req.HotelID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			json.NewEncoder(w).Encode(apperror.NewAppError("Can't find hotel.", fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Can't find hotel. Err msg:%v.", err)))
+			return
+		}
 
-		roomDTO, _ := s.Room().FindByID(req.RoomID)
+		roomDTO, err := s.Room().FindByID(req.RoomID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			json.NewEncoder(w).Encode(apperror.NewAppError("Can't find room.", fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Can't find room. Err msg:%v.", err)))
+			return
+		}
 
 		room, err := s.RoomRepository.RoomFromDTO(roomDTO)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
-			s.Logger.Errorf("Cant find room. Err msg:%v.", err)
+			json.NewEncoder(w).Encode(apperror.NewAppError("Can't convert room.", fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Can't convert room. Err msg:%v.", err)))
 			return
 		}
 
@@ -61,17 +73,17 @@ func UpdateRoom(s *store.Store) httprouter.Handle {
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			s.Logger.Errorf("Data is not valid. Err msg:%v.", err)
+			json.NewEncoder(w).Encode(apperror.NewAppError("Data is not valid.", fmt.Sprintf("%d", http.StatusBadRequest), fmt.Sprintf("Data is not valid. Err msg:%v.", err)))
 			return
 		}
 
 		err = s.Room().Update(room)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
-			s.Logger.Errorf("Can't update Room. Err msg:%v.", err)
+			json.NewEncoder(w).Encode(apperror.NewAppError("Can't update room.", fmt.Sprintf("%d", http.StatusBadRequest), fmt.Sprintf("Can't update room. Err msg:%v.", err)))
 			return
 		}
 
-		s.Logger.Info("Update room with id = %d", room.RoomID)
 		w.WriteHeader(http.StatusCreated)
 		json.NewEncoder(w).Encode(response.Info{Messsage: fmt.Sprintf("Update room with id = %d", room.RoomID)})
 

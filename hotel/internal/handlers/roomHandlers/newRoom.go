@@ -34,7 +34,6 @@ func NewRoom(s *store.Store) httprouter.Handle {
 		hotel, err := s.Hotel().FindByID(req.HotelID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
-			s.Logger.Errorf("Cant find hotel. Err msg:%v.", err)
 			json.NewEncoder(w).Encode(apperror.NewAppError("Cant find hotel.", fmt.Sprintf("%d", http.StatusBadRequest), fmt.Sprintf("Cant find hotel. Err msg:%v.", err)))
 			return
 		}
@@ -58,12 +57,10 @@ func NewRoom(s *store.Store) httprouter.Handle {
 		_, err = s.Room().Create(&room)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
-			s.Logger.Errorf("Can't create Room. Err msg:%v.", err)
 			json.NewEncoder(w).Encode(apperror.NewAppError("Can't create room.", fmt.Sprintf("%d", http.StatusBadRequest), fmt.Sprintf("Can't create room. Err msg:%v.", err)))
 			return
 		}
 
-		s.Logger.Info("Creat room with id = %d", room.RoomID)
 		w.WriteHeader(http.StatusCreated)
 		json.NewEncoder(w).Encode(response.Info{Messsage: fmt.Sprintf("Creat room with id = %d", room.RoomID)})
 	}

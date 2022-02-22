@@ -49,12 +49,10 @@ func NewHotel(s *store.Store) httprouter.Handle {
 		_, err = s.Hotel().Create(&h)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
-			s.Logger.Errorf("Can't create hotel. Err msg:%v.", err)
 			json.NewEncoder(w).Encode(apperror.NewAppError("Can't create hotel.", fmt.Sprintf("%d", http.StatusBadRequest), fmt.Sprintf("Can't create Hotel. Err msg:%v.", err)))
 			return
 		}
 
-		s.Logger.Info("Creat hotel with id = %d", h.HotelID)
 		w.WriteHeader(http.StatusCreated)
 		json.NewEncoder(w).Encode(response.Info{Messsage: fmt.Sprintf("Creat hotel with id = %d", h.HotelID)})
 	}

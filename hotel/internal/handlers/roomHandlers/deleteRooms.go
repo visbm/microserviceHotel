@@ -33,7 +33,6 @@ func DeleteRooms(s *store.Store) httprouter.Handle {
 		}
 		err = s.Room().Delete(id)
 		if err != nil {
-			s.Logger.Errorf("Can't delete room. Err msg:%v.", err)
 			json.NewEncoder(w).Encode(apperror.NewAppError("Can't delete room.", fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Can't delete room. Err msg:%v.", err)))
 			return
 		}

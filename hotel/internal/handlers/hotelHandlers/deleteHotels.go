@@ -31,12 +31,9 @@ func DeleteHotels(s *store.Store) httprouter.Handle {
 		}
 		err = s.Hotel().Delete(id)
 		if err != nil {
-			s.Logger.Errorf("Can't delete hotel. Err msg:%v.", err)
 			json.NewEncoder(w).Encode(apperror.NewAppError("Can't delete hotel.", fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Can't delete hotel. Err msg:%v.", err)))
 			return
 		}
-
-		s.Logger.Info("Delete hotel with id = %d", id)
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(response.Info{Messsage: fmt.Sprintf("Delete hotel with id = %d", id)})
 

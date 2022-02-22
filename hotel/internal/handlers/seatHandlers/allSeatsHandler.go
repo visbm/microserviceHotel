@@ -24,7 +24,6 @@ func AllSeatsHandler(s *store.Store) httprouter.Handle {
 		seats, err := s.Seat().GetAll()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
-			s.Logger.Errorf("Can't find seats . Err msg: %v", err)
 			json.NewEncoder(w).Encode(apperror.NewAppError("Can't find seats", fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Can't find seats. Err msg: %v", err)))
 			return
 		}

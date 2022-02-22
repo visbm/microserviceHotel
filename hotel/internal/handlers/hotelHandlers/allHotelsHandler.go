@@ -25,7 +25,6 @@ func AllHotelsHandler(s *store.Store) httprouter.Handle {
 		hotels, err := s.Hotel().GetAll()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
-			s.Logger.Errorf("Can't find hotels. Err msg: %v", err)
 			json.NewEncoder(w).Encode(apperror.NewAppError("Can't find hotels", fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Can't find hotels. Err msg: %v", err)))
 			return
 		}

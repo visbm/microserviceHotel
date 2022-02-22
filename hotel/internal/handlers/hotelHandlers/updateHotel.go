@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"hotel/domain/model"
+	"hotel/internal/apperror"
 	"hotel/internal/store"
 	"hotel/pkg/response"
 	"net/http"
@@ -26,13 +27,14 @@ func UpdateHotel(s *store.Store) httprouter.Handle {
 		err := s.Open()
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			s.Logger.Errorf("Can't open DB. Err msg:%v.", err)
+			json.NewEncoder(w).Encode(apperror.NewAppError("Can't open DB", fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Can't open DB. Err msg:%v.", err)))
+			return
 		}
 
 		h, err := s.Hotel().FindByID(req.HotelID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
-			s.Logger.Errorf("Cant find hotel. Err msg:%v.", err)
+			json.NewEncoder(w).Encode(apperror.NewAppError("Can't find hotel.", fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Can't find hotel. Err msg:%v.", err)))
 			return
 		}
 
@@ -48,17 +50,17 @@ func UpdateHotel(s *store.Store) httprouter.Handle {
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			s.Logger.Errorf("Data is not valid. Err msg:%v.", err)
+			json.NewEncoder(w).Encode(apperror.NewAppError("Data is not valid.", fmt.Sprintf("%d", http.StatusBadRequest), fmt.Sprintf("Data is not valid. Err msg:%v.", err)))
 			return
 		}
 
 		err = s.Hotel().Update(h)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
-			s.Logger.Errorf("Can't update hotel. Err msg:%v.", err)
+			json.NewEncoder(w).Encode(apperror.NewAppError("Can't update hotel.", fmt.Sprintf("%d", http.StatusBadRequest), fmt.Sprintf("Can't update hotel. Err msg:%v.", err)))
 			return
 		}
-
-		s.Logger.Info("Update Hotel with id = %d", h.HotelID)
+		
 		w.WriteHeader(http.StatusCreated)
 		json.NewEncoder(w).Encode(response.Info{Messsage: fmt.Sprintf("Update hotel with id = %d", h.HotelID)})
 
