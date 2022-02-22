@@ -1,8 +1,8 @@
 version: '3.9'
 
 services:
-    hoteldb:
-        container_name: hoteldb
+    hoteldatabase:
+        container_name: hoteldatabase
         image: postgres:latest
         env_file:
             - .env
@@ -16,13 +16,14 @@ services:
             - "8081:5432"
         restart: always
         volumes:
-            - database-data:/var/lib/postgresql/user/data/
+            - database-data:/var/lib/postgresql/hotel/data/
         networks:
             new:
                 aliases:
                     - database
-    hoteldbtest:
-        container_name: hoteldbtest
+
+    hoteldatabasetest:
+        container_name: hoteldatabasetest
         image: postgres:latest
         env_file:
             - .env
@@ -36,7 +37,7 @@ services:
             - "3232:5432"
         restart: unless-stopped
         volumes:
-            - database-test:/var/lib/test-date/user/data/
+            - database-test:/var/lib/test-date/hotel/data/
         networks:
             new:
                 aliases:
@@ -65,19 +66,19 @@ services:
         networks:
             - new
         volumes:
-            - ./user/migrations:/user/migrations
+            - ./hotel/migrations:/hotel/migrations
         command:
             [
                 "-path",
-                "user/migrations",
+                "hotel/migrations",
                 "-database",
-                "postgres://user:userpass@hoteldb:5432/hoteldb?sslmode=disable",
+                "postgres://user:userpass@hoteldatabase:5432/hoteldb?sslmode=disable",
                 "up"
             ]
         links:
-            - hoteldb
+            - hoteldatabase
         depends_on:
-            - hoteldb
+            - hoteldatabase
 
     test_migrate:
         container_name: test_migrate
@@ -86,25 +87,25 @@ services:
         networks:
             - new
         volumes:
-            - ./user/migrations:/user/migrations
+            - ./hotel/migrations:/hotel/migrations
         command:
             [
                 "-path",
-                "user/migrations",
+                "hotel/migrations",
                 "-database",
-                "postgres://user:userpass@hoteldbtest:5432/testuserdatabase?sslmode=disable",
+                "postgres://user:userpass@hoteldatabasetest:5432/hoteldbtest?sslmode=disable",
                 "up"
             ]
         links:
-            - hoteldbtest
+            - hoteldatabasetest
         depends_on:
-            - hoteldbtest
+            - hoteldatabasetest
 
     hotel_service:
         container_name: hotel_service
         build:
             dockerfile: dockerfile
-            context: ./user
+            context: ./hotel
         ports:
             - "5555:5555"
         env_file:
@@ -115,11 +116,11 @@ services:
         tty: true
         restart: on-failure
         volumes:
-            - api:/user/
+            - api:/hotel/
         networks:
             - new
         depends_on:
-            - hoteldb
+            - hoteldatabase
 
 networks:
     new:
