@@ -1,4 +1,4 @@
-package roomhandlers
+package employeehandlers
 
 import (
 	"encoding/json"
@@ -12,10 +12,10 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-func UpdateRoom(s *store.Store) httprouter.Handle {
+func UpdateEmployee(s *store.Store) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
-		req := &model.RoomDTO{}
+		req := &model.EmployeeDTO{}
 		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			s.Logger.Errorf("Eror during JSON request decoding. Request body: %v, Err msg: %w", r.Body, err)
@@ -37,39 +37,35 @@ func UpdateRoom(s *store.Store) httprouter.Handle {
 			return
 		}
 
-		roomDTO, err := s.Room().FindByID(req.RoomID)
+		employeeDTO, err := s.Employee().FindByID(req.EmployeeID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
-			json.NewEncoder(w).Encode(apperror.NewAppError("Can't find room.", fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Can't find room. Err msg:%v.", err)))
+			json.NewEncoder(w).Encode(apperror.NewAppError("Can't find employee.", fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Can't find employee. Err msg:%v.", err)))
+
 			return
 		}
 
-		room, err := s.RoomRepository.RoomFromDTO(roomDTO)
+		employee, err := s.Employee().EmployeeFromDTO(employeeDTO)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
-			json.NewEncoder(w).Encode(apperror.NewAppError("Can't convert room.", fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Can't convert room. Err msg:%v.", err)))
+			json.NewEncoder(w).Encode(apperror.NewAppError("Can't convert employee.", fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Can't convert employee. Err msg:%v.", err)))
 			return
-		}
-
-		if req.RoomNumber != 0 {
-			room.RoomNumber = req.RoomNumber
-		}
-
-		if req.PetType != "" {
-			room.PetType = req.PetType
 		}
 
 		if hotel != nil {
-			if hotel.HotelID != req.HotelID {
-				room.Hotel = *hotel
+			if employee.Hotel.HotelID != req.HotelID {
+				employee.Hotel = *hotel
 			}
 		}
 
-		if req.RoomPhotoURL != "" {
-			room.RoomPhotoURL = req.RoomPhotoURL
+		if req.UserID != 0 {
+			employee.UserID = req.UserID
+		}
+		if req.Position != "" {
+			employee.Position = req.Position
 		}
 
-		err = room.Validate()
+		err = employee.Validate()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			s.Logger.Errorf("Data is not valid. Err msg:%v.", err)
@@ -77,15 +73,15 @@ func UpdateRoom(s *store.Store) httprouter.Handle {
 			return
 		}
 
-		err = s.Room().Update(room)
+		err = s.Employee().Update(employee)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
-			json.NewEncoder(w).Encode(apperror.NewAppError("Can't update room.", fmt.Sprintf("%d", http.StatusBadRequest), fmt.Sprintf("Can't update room. Err msg:%v.", err)))
+			json.NewEncoder(w).Encode(apperror.NewAppError("Can't update employee.", fmt.Sprintf("%d", http.StatusBadRequest), fmt.Sprintf("Can't update employee. Err msg:%v.", err)))
 			return
 		}
 
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(response.Info{Messsage: fmt.Sprintf("Update room with id = %d", room.RoomID)})
+		json.NewEncoder(w).Encode(response.Info{Messsage: fmt.Sprintf("Update employee with id = %d", employee.EmployeeID)})
 
 	}
 }

@@ -52,3 +52,16 @@ func IsPetType(value interface{}) error {
 	}
 	return errors.New("allowed pet types: 'PetTypeCat', 'PetTypeDog'")
 }
+
+// IsEmployeePosition checks if string matchs to a Employee Position
+//	ManagerPosition  Position = "manager"
+//	EmployeePosition Position = "employee"
+//	OwnerPosition    Position = "owner"
+//	AdminPosition    Position = "admin"
+func IsEmployeePosition(value interface{}) error {
+	s := value.(Position)
+	if s == ManagerPosition || s == EmployeePosition || s == OwnerPosition || s == AdminPosition {
+		return nil
+	}
+	return errors.New("allowed Employee Position: 'ManagerPosition', 'EmployeePosition' ,'OwnerPosition','AdminPosition'")
+}

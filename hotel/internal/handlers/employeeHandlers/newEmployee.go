@@ -1,4 +1,4 @@
-package hotelhandlers
+package employeehandlers
 
 import (
 	"encoding/json"
@@ -17,7 +17,7 @@ func NewHotel(s *store.Store) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		w.Header().Set("Content-Type", "application/json")
 
-		req := &model.Hotel{}
+		req := &model.EmployeeDTO{}
 		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			s.Logger.Errorf("Eror during JSON request decoding. Request body: %v, Err msg: %w", r.Body, err)
@@ -31,14 +31,21 @@ func NewHotel(s *store.Store) httprouter.Handle {
 			json.NewEncoder(w).Encode(apperror.NewAppError("Can't open DB", fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Can't open DB. Err msg:%v.", err)))
 			return
 		}
-
-		h := model.Hotel{
-			HotelID: 0,
-			Name:    req.Name,
-			Address: req.Address,
+		hotel, err := s.Hotel().FindByID(req.HotelID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			json.NewEncoder(w).Encode(apperror.NewAppError("Cant find hotel.", fmt.Sprintf("%d", http.StatusBadRequest), fmt.Sprintf("Cant find hotel. Err msg:%v.", err)))
+			return
 		}
 
-		err = h.Validate()
+		e := model.Employee{
+			EmployeeID: 0,
+			UserID:     req.UserID,
+			Hotel:      *hotel,
+			Position:   model.Position(req.Position),
+		}
+
+		err = e.Validate()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			s.Logger.Errorf("Data is not valid. Err msg:%v.", err)
@@ -46,15 +53,14 @@ func NewHotel(s *store.Store) httprouter.Handle {
 			return
 		}
 
-		_, err = s.Hotel().Create(&h)
+		_, err = s.Employee().Create(&e)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
-			json.NewEncoder(w).Encode(apperror.NewAppError("Can't create hotel.", fmt.Sprintf("%d", http.StatusBadRequest), fmt.Sprintf("Can't create Hotel. Err msg:%v.", err)))
+			json.NewEncoder(w).Encode(apperror.NewAppError("Can't create employee.", fmt.Sprintf("%d", http.StatusBadRequest), fmt.Sprintf("Can't create employee. Err msg:%v.", err)))
 			return
 		}
 
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(response.Info{Messsage: fmt.Sprintf("Creat hotel with id = %d", h.HotelID)})
+		json.NewEncoder(w).Encode(response.Info{Messsage: fmt.Sprintf("Creat employee with id = %d", e.EmployeeID)})
 	}
-
 }

@@ -8,4 +8,4 @@
 `migrate -path user/migrations -database 'postgres://user:userpass@0.0.0.0:8081/userdb?sslmode=disable' force 1 `
 
 4. add migr files
-`migrate create -ext sql -dir migrations -seq upd_seats `
+`migrate create -ext sql -dir migrations -seq add-employee `

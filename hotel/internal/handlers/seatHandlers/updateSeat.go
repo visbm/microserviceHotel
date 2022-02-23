@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"hotel/domain/model"
+	"hotel/internal/apperror"
 	"hotel/internal/store"
 	"hotel/pkg/response"
 	"net/http"
@@ -25,24 +26,36 @@ func UpdateSeat(s *store.Store) httprouter.Handle {
 		err := s.Open()
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			s.Logger.Errorf("Can't open DB. Err msg:%v.", err)
+			json.NewEncoder(w).Encode(apperror.NewAppError("Can't open DB", fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Can't open DB. Err msg:%v.", err)))
+			return
 		}
 
-		roomDTO, _ := s.Room().FindByID(req.RoomID)
+		roomDTO, err := s.Room().FindByID(req.RoomID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			json.NewEncoder(w).Encode(apperror.NewAppError("Can't find room.", fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Can't find room. Err msg:%v.", err)))
+			return
+		}
 
-		room, _ := s.Room().RoomFromDTO(roomDTO)
+		room, err := s.RoomRepository.RoomFromDTO(roomDTO)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			json.NewEncoder(w).Encode(apperror.NewAppError("Can't convert room.", fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Can't convert room. Err msg:%v.", err)))
+			return
+		}
 
 		SeatDTO, err := s.Seat().FindByID(req.SeatID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
-			s.Logger.Errorf("Cant find Room. Err msg:%v.", err)
+			json.NewEncoder(w).Encode(apperror.NewAppError("Can't find seat.", fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Can't find seat. Err msg:%v.", err)))
+
 			return
 		}
 
 		seat, err := s.Seat().SeatFromDTO(SeatDTO)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
-			s.Logger.Errorf("Cant find room. Err msg:%v.", err)
+			json.NewEncoder(w).Encode(apperror.NewAppError("Can't convert seat.", fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Can't convert seat. Err msg:%v.", err)))
 			return
 		}
 
@@ -64,23 +77,23 @@ func UpdateSeat(s *store.Store) httprouter.Handle {
 			seat.RentTo = req.RentTo
 		}
 
-		err = room.Validate()
+		err = seat.Validate()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			s.Logger.Errorf("Data is not valid. Err msg:%v.", err)
+			json.NewEncoder(w).Encode(apperror.NewAppError("Data is not valid.", fmt.Sprintf("%d", http.StatusBadRequest), fmt.Sprintf("Data is not valid. Err msg:%v.", err)))
 			return
 		}
 
-		err = s.Room().Update(room)
+		err = s.Seat().Update(seat)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
-			s.Logger.Errorf("Can't update Room. Err msg:%v.", err)
+			json.NewEncoder(w).Encode(apperror.NewAppError("Can't update seat.", fmt.Sprintf("%d", http.StatusBadRequest), fmt.Sprintf("Can't update seat. Err msg:%v.", err)))
 			return
 		}
 
-		s.Logger.Info("Update room with id = %d", room.RoomID)
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(response.Info{Messsage: fmt.Sprintf("Update room with id = %d", room.RoomID)})
+		json.NewEncoder(w).Encode(response.Info{Messsage: fmt.Sprintf("Update seat with id = %d", seat.SeatID)})
 
 	}
 }

@@ -2,6 +2,8 @@ package seathandlers
 
 import (
 	"encoding/json"
+	"fmt"
+	"hotel/internal/apperror"
 	"hotel/internal/store"
 	"net/http"
 
@@ -16,13 +18,13 @@ func AllSeatsHandler(s *store.Store) httprouter.Handle {
 		err := s.Open()
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			s.Logger.Errorf("Can't open DB. Err msg:%v.", err)
+			json.NewEncoder(w).Encode(apperror.NewAppError("Can't open DB", fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Can't open DB. Err msg:%v.", err)))
 			return
 		}
 		seats, err := s.Seat().GetAll()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
-			s.Logger.Errorf("Can't find seats. Err msg: %v", err)
+			json.NewEncoder(w).Encode(apperror.NewAppError("Can't find seats", fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Can't find seats. Err msg: %v", err)))
 			return
 		}
 
