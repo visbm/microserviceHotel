@@ -13,7 +13,7 @@ func (s *Server) ConfigureRouter() {
 
 	s.Router.Handle("GET", "/hotels", hotelhandlers.AllHotelsHandler(store.New(s.Config)))
 	s.Router.Handle("GET", "/hotel/:id", hotelhandlers.GetHotelByID(store.New(s.Config)))
-	s.Router.Handle("DELETE", "/hotels/:id", hotelhandlers.DeleteHotels(store.New(s.Config)))
+	s.Router.Handle("DELETE", "/hotel/:id", hotelhandlers.DeleteHotels(store.New(s.Config)))
 	s.Router.Handle("POST", "/hotel", hotelhandlers.NewHotel(store.New(s.Config)))
 	s.Router.Handle("PUT", "/hotel", hotelhandlers.UpdateHotel(store.New(s.Config)))
 
@@ -25,7 +25,7 @@ func (s *Server) ConfigureRouter() {
 
 	s.Router.Handle("GET", "/seats", seathandlers.AllSeatsHandler(store.New(s.Config)))
 	s.Router.Handle("GET", "/seat/:id", seathandlers.GetSeatByID(store.New(s.Config)))
-	s.Router.Handle("DELETE", "/seats/:id", seathandlers.DeleteSeats(store.New(s.Config)))
+	s.Router.Handle("DELETE", "/seat/:id", seathandlers.DeleteSeats(store.New(s.Config)))
 	s.Router.Handle("POST", "/seat", seathandlers.NewSeat(store.New(s.Config)))
 	s.Router.Handle("PUT", "/seat", seathandlers.UpdateSeat(store.New(s.Config)))
 
