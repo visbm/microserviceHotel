@@ -32,7 +32,7 @@ func (s *Server) ConfigureRouter() {
 	s.Router.Handle("GET", "/employees", employeehandlers.AllEmployeeHandler(store.New(s.Config)))
 	s.Router.Handle("GET", "/employee/:id", employeehandlers.GetEmployeeByID(store.New(s.Config)))
 	s.Router.Handle("DELETE", "/employee/:id", employeehandlers.DeleteEmployee(store.New(s.Config)))
-	s.Router.Handle("POST", "/employee", employeehandlers.NewHotel(store.New(s.Config)))
+	s.Router.Handle("POST", "/employee", employeehandlers.NewEmployee(store.New(s.Config)))
 	s.Router.Handle("PUT", "/employee", employeehandlers.UpdateEmployee(store.New(s.Config)))
 
 }

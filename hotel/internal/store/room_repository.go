@@ -135,7 +135,12 @@ func (r *RoomRepository) GetAllPagination(p *pagination.Page) (*[]model.RoomDTO,
 
 // RoomFromDTO ...
 func (r *RoomRepository) RoomFromDTO(dto *model.RoomDTO) (*model.Room, error) {
-	hotel, err := r.Store.HotelRepository.FindByID(dto.HotelID)
+	r.Store.Logger.Info("dto  ", dto)
+	r.Store.Logger.Info("dto.HotelID   ", dto.HotelID)
+	id := dto.HotelID
+	r.Store.Logger.Info("id   ", id)
+	hotel, err := r.Store.Hotel().FindByID(id)
+	r.Store.Logger.Info("hotel", hotel)
 	if err != nil {
 		r.Store.Logger.Errorf("Can't convert roomDTO. Err msg: %v", err)
 		return nil, err
