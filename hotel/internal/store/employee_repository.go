@@ -116,7 +116,7 @@ func (r *EmployeeRepository) FindByUserID(iserId int) (*model.EmployeeDTO, error
 		&employee.HotelID,
 		&employee.Position,
 	); err != nil {
-		log.Printf(err.Error())
+		r.Store.Logger.Errorf("Cant find employee. Err msg:%v.", err)
 		return nil, err
 	}
 	return employee, nil
