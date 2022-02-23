@@ -13,7 +13,7 @@ type Hotel struct {
 func (h *Hotel) Validate() error {
 	return validation.ValidateStruct(
 		h,
-		validation.Field(&h.Name, validation.Required, validation.By(IsLetterHyphenSpaces), validation.Length(1, 20)),
+		validation.Field(&h.Name, validation.Required, validation.Length(1, 20)),
 		validation.Field(&h.Address, validation.Required, validation.Length(10, 40)),
 	)
 }

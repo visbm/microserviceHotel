@@ -13,9 +13,7 @@ type SeatRepository struct {
 // Create seat and save it to DB
 func (r *SeatRepository) Create(s *model.Seat) (*model.Seat, error) {
 	if err := r.Store.Db.QueryRow(
-		"INSERT INTO seat",
-		"(room_id, rent_from, rent_to, description)",
-		"VALUES ($1, $2, $3, $4) RETURNING id",
+		"INSERT INTO seat (room_id, rent_from, rent_to, description) VALUES ($1, $2, $3, $4) RETURNING id",
 		s.Room.RoomID,
 		s.RentFrom,
 		s.RentTo,
@@ -97,9 +95,7 @@ func (r *SeatRepository) Delete(id int) error {
 func (r *SeatRepository) Update(s *model.Seat) error {
 
 	result, err := r.Store.Db.Exec(
-		"UPDATE seat SET",
-		"room_id = $1, rent_from = $2, rent_to = $3, description = $",
-		"WHERE id = $5",
+		"UPDATE seat SET room_id = $1, rent_from = $2, rent_to = $3, description = $4 WHERE id = $5",
 		s.Room.RoomID,
 		s.RentFrom,
 		s.RentTo,
@@ -116,13 +112,13 @@ func (r *SeatRepository) Update(s *model.Seat) error {
 
 // SeatFromDTO ...
 func (r *SeatRepository) SeatFromDTO(dto *model.SeatDTO) (*model.Seat, error) {
-	roomDTO, err := r.Store.RoomRepository.FindByID(dto.RoomID)
+	roomDTO, err := r.Store.Room().FindByID(dto.RoomID)
 	if err != nil {
 		r.Store.Logger.Errorf("Can't convert seatDTO. Err msg: %v", err)
 		return nil, err
 	}
 
-	room, err := r.Store.RoomRepository.RoomFromDTO(roomDTO)
+	room, err := r.Store.Room().RoomFromDTO(roomDTO)
 	if err != nil {
 		r.Store.Logger.Errorf("Can't convert seatDTO. Err msg: %v", err)
 		return nil, err

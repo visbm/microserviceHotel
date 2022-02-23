@@ -28,11 +28,11 @@ services:
         env_file:
             - .env
         environment:
-            - TEST_POSTGRES_USER=${TEST_HOTEL_POSTGRES_USER}
-            - TEST_POSTGRES_PASSWORD=${TEST_HOTEL_POSTGRES_PASSWORD}
-            - TEST_POSTGRES_DB=${TEST_HOTEL_POSTGRES_DB}
-            - TEST_POSTGRES_HOST=${TEST_HOTEL_POSTGRES_HOST}
-            - TEST_POSTGRES_SSLMODE=${TEST_HOTEL_POSTGRES_SSLMODE}
+            - POSTGRES_USER=${TEST_HOTEL_POSTGRES_USER}
+            - POSTGRES_PASSWORD=${TEST_HOTEL_POSTGRES_PASSWORD}
+            - POSTGRES_DB=${TEST_HOTEL_POSTGRES_DB}
+            - POSTGRES_HOST=${TEST_HOTEL_POSTGRES_HOST}
+            - POSTGRES_SSLMODE=${TEST_HOTEL_POSTGRES_SSLMODE}
         ports:
             - "3232:5432"
         restart: unless-stopped

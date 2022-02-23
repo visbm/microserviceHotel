@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS SEAT
 
 CREATE TABLE IF NOT EXISTS EMPLOYEE 
 (   id          serial PRIMARY key ,
-    user_id     INTEGER ON DELETE CASCADE NOT NULL UNIQUE,
+    user_id     INTEGER NOT NULL UNIQUE,
     hotel_id    INTEGER REFERENCES HOTEL(id) ON DELETE CASCADE ,
     position    emp_position NOT NULL 
 );

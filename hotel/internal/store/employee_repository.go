@@ -93,9 +93,7 @@ func (r *EmployeeRepository) Delete(id int) error {
 func (r *EmployeeRepository) Update(e *model.Employee) error {
 
 	result, err := r.Store.Db.Exec(
-		"UPDATE employee SET",
-		"user_id = $1, hotel_id = $2, position = $3",
-		"WHERE id = $4",
+		"UPDATE employee SET user_id = $1, hotel_id = $2, position = $3 WHERE id = $4",
 		e.UserID,
 		e.Hotel.HotelID,
 		e.Position,
@@ -118,7 +116,7 @@ func (r *EmployeeRepository) FindByUserID(iserId int) (*model.EmployeeDTO, error
 		&employee.HotelID,
 		&employee.Position,
 	); err != nil {
-		log.Printf(err.Error())
+		r.Store.Logger.Errorf("Cant find employee. Err msg:%v.", err)
 		return nil, err
 	}
 	return employee, nil
@@ -127,7 +125,7 @@ func (r *EmployeeRepository) FindByUserID(iserId int) (*model.EmployeeDTO, error
 
 // EmployeeFromDTO ...
 func (r *EmployeeRepository) EmployeeFromDTO(dto *model.EmployeeDTO) (*model.Employee, error) {
-	hotel, err := r.Store.HotelRepository.FindByID(dto.HotelID)
+	hotel, err := r.Store.Hotel().FindByID(dto.HotelID)
 	if err != nil {
 		r.Store.Logger.Errorf("Can't convert employeeDTO. Err msg: %v", err)
 		return nil, err

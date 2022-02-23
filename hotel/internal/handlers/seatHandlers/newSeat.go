@@ -24,6 +24,9 @@ func NewSeat(s *store.Store) httprouter.Handle {
 			return
 		}
 
+		s.Logger.Info("req :" , req)
+		
+
 		err := s.Open()
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -37,6 +40,7 @@ func NewSeat(s *store.Store) httprouter.Handle {
 			json.NewEncoder(w).Encode(apperror.NewAppError("Cant find room.", fmt.Sprintf("%d", http.StatusBadRequest), fmt.Sprintf("Cant find room. Err msg:%v.", err)))
 			return
 		}
+		s.Logger.Info("roomDTO :" , roomDTO)
 
 		room, err := s.Room().RoomFromDTO(roomDTO)
 		if err != nil {
@@ -44,6 +48,7 @@ func NewSeat(s *store.Store) httprouter.Handle {
 			json.NewEncoder(w).Encode(apperror.NewAppError("Can't find room.", fmt.Sprintf("%d", http.StatusInternalServerError), fmt.Sprintf("Can't find room. Err msg:%v.", err)))
 			return
 		}
+		s.Logger.Info("room :" , room)
 
 		seat := model.Seat{
 			SeatID:      0,
@@ -65,7 +70,6 @@ func NewSeat(s *store.Store) httprouter.Handle {
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			json.NewEncoder(w).Encode(apperror.NewAppError("Can't create seat.", fmt.Sprintf("%d", http.StatusBadRequest), fmt.Sprintf("Can't create seat. Err msg:%v.", err)))
-
 			return
 		}
 
